@@ -53,7 +53,6 @@ app.use(authRoutes); // للـ /api/user routes
 // متغير لتخزين الـ Discord client
 let discordClient = null;
 
-
 // Health check endpoint
 app.get("/health", (req, res) => {
     res.json({
@@ -180,14 +179,15 @@ app.use((req, res, next) => {
 let serverInstance = null;
 
 function startDashboard(client) {
-    discordClient = client;
-    console.log("[Dashboard] Discord client connected");
+    if (client) {
+        discordClient = client;
+        console.log("[Dashboard] Discord client connected");
+    }
 
     // بدء Express server فقط إذا لم يكن يعمل
     if (!serverInstance) {
-        serverInstance = app.listen(PORT, '0.0.0.0', () => {
-            console.log(`[Dashboard] ✅ Running at http://localhost:${PORT}`);
-            console.log(`[Dashboard] Health check: http://localhost:${PORT}/health`);
+        serverInstance = app.listen(PORT, "0.0.0.0", () => {
+            console.log(`[Dashboard] ✅ Listening on 0.0.0.0:${PORT}`);
         });
     }
 }
