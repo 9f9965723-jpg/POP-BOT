@@ -21,12 +21,18 @@ export async function startBot() {
     throw new Error('Missing DISCORD_TOKEN');
   }
 
+  console.log('Starting Discord bot...');
+
   client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
     partials: [Partials.Channel]
   });
 
   client.commands = new Collection();
+
+  client.on('warn', (m) => console.warn('[discord warn]', m));
+  client.on('error', (e) => console.error('[discord error]', e));
+  client.on('shardError', (e) => console.error('[discord shardError]', e));
 
   const commands = await loadCommands();
   for (const cmd of commands) {
@@ -36,6 +42,10 @@ export async function startBot() {
   client.once(Events.ClientReady, async (c) => {
     console.log(`Logged in as ${c.user.tag}`);
     await registerCommands(commands);
+  });
+
+  client.on(Events.Invalidated, () => {
+    console.error('Discord client invalidated (token revoked or session invalid).');
   });
 
   client.on(Events.InteractionCreate, async (interaction) => {
@@ -57,5 +67,11 @@ export async function startBot() {
     }
   });
 
-  await client.login(token);
+  try {
+    await client.login(token);
+    console.log('Discord login() resolved. Waiting for READY...');
+  } catch (err) {
+    console.error('Discord login failed. Check DISCORD_TOKEN.', err);
+    throw err;
+  }
 }
