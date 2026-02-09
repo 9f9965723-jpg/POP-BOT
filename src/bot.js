@@ -58,51 +58,6 @@ const client = new Client({
   partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.User],
 });
 
-client.on("error", (err) => {
-  console.error("[Discord] Client error:", err);
-});
-
-client.on("warn", (msg) => {
-  console.warn("[Discord] Warning:", msg);
-});
-
-client.on("shardError", (err) => {
-  console.error("[Discord] Shard error:", err);
-});
-
-client.on("shardDisconnect", (event, id) => {
-  console.error("[Discord] Shard disconnected:", {
-    id,
-    code: event?.code,
-    reason: event?.reason,
-    wasClean: event?.wasClean,
-  });
-});
-
-client.on("shardReconnecting", (id) => {
-  console.warn("[Discord] Shard reconnecting:", { id });
-});
-
-client.on("shardResume", (id, replayedEvents) => {
-  console.log("[Discord] Shard resumed:", { id, replayedEvents });
-});
-
-client.on("shardReady", (id) => {
-  console.log("[Discord] Shard ready:", { id });
-});
-
-client.on("debug", (msg) => {
-  if (process.env.DISCORD_DEBUG === "1") {
-    console.log("[Discord] Debug:", msg);
-  }
-});
-
-process.on("unhandledRejection", (reason) => {
-  console.error("[Process] Unhandled rejection:", reason);
-});
-
-console.log("[Discord] DISCORD_TOKEN:", token ? `${String(token).substring(0, 6)}...` : "NOT SET");
-
 // لتفادي جدولة نفس الرسالة أكثر من مرة أثناء التشغيل
 const scheduled = new Map(); // messageId -> timeoutId
 
@@ -615,15 +570,5 @@ client.on("messageCreate", async (message) => {
   scheduleFinalize(guildId, message.channelId, message.id, endsAtMs, createdAtMs);
 });
 
-console.log("[Discord] Logging in...");
-client.login(token).catch((err) => {
-  console.error("[Discord] Login failed:", err);
-  process.exit(1);
-});
-
-setTimeout(() => {
-  if (!client.isReady()) {
-    console.error("[Discord] Ready timeout: bot did not reach READY state within 30s");
-  }
-}, 30_000);
+client.login(token);
 
