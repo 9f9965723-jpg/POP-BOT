@@ -39,7 +39,7 @@ const {
   getRateLimitReset,
 } = require("./downloadStore");
 
-const token = process.env.DISCORD_TOKEN;
+const token = (process.env.DISCORD_TOKEN || "").trim();
 if (!token) {
   console.error("Missing DISCORD_TOKEN. Put it in ./env (see env.example).");
   process.exit(1);
@@ -570,5 +570,15 @@ client.on("messageCreate", async (message) => {
   scheduleFinalize(guildId, message.channelId, message.id, endsAtMs, createdAtMs);
 });
 
-client.login(token);
+client.login(token).catch((err) => {
+  console.error("Discord login failed:", err);
+  process.exit(1);
+});
+
+setTimeout(() => {
+  if (!client.isReady()) {
+    console.error("Discord login timeout: bot did not reach READY state within 30s");
+    process.exit(1);
+  }
+}, 30_000);
 
