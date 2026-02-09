@@ -58,6 +58,22 @@ const client = new Client({
   partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.User],
 });
 
+client.on("error", (err) => {
+  console.error("[Discord] Client error:", err);
+});
+
+client.on("warn", (msg) => {
+  console.warn("[Discord] Warning:", msg);
+});
+
+client.on("shardError", (err) => {
+  console.error("[Discord] Shard error:", err);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("[Process] Unhandled rejection:", reason);
+});
+
 // لتفادي جدولة نفس الرسالة أكثر من مرة أثناء التشغيل
 const scheduled = new Map(); // messageId -> timeoutId
 
@@ -570,5 +586,8 @@ client.on("messageCreate", async (message) => {
   scheduleFinalize(guildId, message.channelId, message.id, endsAtMs, createdAtMs);
 });
 
-client.login(token);
+client.login(token).catch((err) => {
+  console.error("[Discord] Login failed:", err);
+  process.exit(1);
+});
 
