@@ -70,6 +70,33 @@ client.on("shardError", (err) => {
   console.error("[Discord] Shard error:", err);
 });
 
+client.on("shardDisconnect", (event, id) => {
+  console.error("[Discord] Shard disconnected:", {
+    id,
+    code: event?.code,
+    reason: event?.reason,
+    wasClean: event?.wasClean,
+  });
+});
+
+client.on("shardReconnecting", (id) => {
+  console.warn("[Discord] Shard reconnecting:", { id });
+});
+
+client.on("shardResume", (id, replayedEvents) => {
+  console.log("[Discord] Shard resumed:", { id, replayedEvents });
+});
+
+client.on("shardReady", (id) => {
+  console.log("[Discord] Shard ready:", { id });
+});
+
+client.on("debug", (msg) => {
+  if (process.env.DISCORD_DEBUG === "1") {
+    console.log("[Discord] Debug:", msg);
+  }
+});
+
 process.on("unhandledRejection", (reason) => {
   console.error("[Process] Unhandled rejection:", reason);
 });
@@ -593,4 +620,10 @@ client.login(token).catch((err) => {
   console.error("[Discord] Login failed:", err);
   process.exit(1);
 });
+
+setTimeout(() => {
+  if (!client.isReady()) {
+    console.error("[Discord] Ready timeout: bot did not reach READY state within 30s");
+  }
+}, 30_000);
 
