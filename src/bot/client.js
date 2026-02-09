@@ -16,7 +16,7 @@ export function getClient() {
 }
 
 export async function startBot() {
-  const token = process.env.DISCORD_TOKEN;
+  const token = process.env.DISCORD_TOKEN?.trim();
   if (!token) {
     throw new Error('Missing DISCORD_TOKEN');
   }
@@ -48,6 +48,14 @@ export async function startBot() {
     console.error('Discord client invalidated (token revoked or session invalid).');
   });
 
+  const readyDeadlineMs = 30_000;
+  const readyTimer = setTimeout(() => {
+    console.error(
+      `Discord READY not received within ${readyDeadlineMs}ms. ` +
+        'Common causes: invalid token, bot not invited, Discord gateway connectivity issues, or Render env var formatting.'
+    );
+  }, readyDeadlineMs);
+
   client.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
@@ -68,10 +76,21 @@ export async function startBot() {
   });
 
   try {
-    await client.login(token);
+    console.log('Calling discord.js login()...');
+
+    const loginTimeoutMs = 15_000;
+    await Promise.race([
+      client.login(token),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Discord login() timed out after ${loginTimeoutMs}ms`)), loginTimeoutMs)
+      )
+    ]);
+
     console.log('Discord login() resolved. Waiting for READY...');
   } catch (err) {
     console.error('Discord login failed. Check DISCORD_TOKEN.', err);
     throw err;
+  } finally {
+    client.once(Events.ClientReady, () => clearTimeout(readyTimer));
   }
 }
