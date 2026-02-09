@@ -45,6 +45,8 @@ if (!token) {
   process.exit(1);
 }
 
+startDashboard();
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
