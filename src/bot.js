@@ -74,6 +74,8 @@ process.on("unhandledRejection", (reason) => {
   console.error("[Process] Unhandled rejection:", reason);
 });
 
+console.log("[Discord] DISCORD_TOKEN:", token ? `${String(token).substring(0, 6)}...` : "NOT SET");
+
 // لتفادي جدولة نفس الرسالة أكثر من مرة أثناء التشغيل
 const scheduled = new Map(); // messageId -> timeoutId
 
@@ -586,6 +588,7 @@ client.on("messageCreate", async (message) => {
   scheduleFinalize(guildId, message.channelId, message.id, endsAtMs, createdAtMs);
 });
 
+console.log("[Discord] Logging in...");
 client.login(token).catch((err) => {
   console.error("[Discord] Login failed:", err);
   process.exit(1);
