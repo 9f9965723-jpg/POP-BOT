@@ -9,7 +9,7 @@
     "dev": "node --watch src/index.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20 <21"
   },
   "dependencies": {
     "discord.js": "^14.19.3",
